@@ -33,3 +33,21 @@ O site envia o link pelo **Resend** (resend.com). Sem isso, o botão volta ao mo
 Como funciona: o e-mail traz um link que vale 15 minutos. Ao abrir, o site confere a assinatura e faz o login. Para gestores com Google Authenticator, o código continua sendo pedido. Os links são assinados no servidor, então ninguém consegue entrar só digitando um e-mail.
 
 Limites: (1) enquanto o portão de senha do site estiver ligado, o link precisa ser aberto no **mesmo navegador** em que a senha do site foi digitada; (2) a regra "só pode ser usado uma vez" vale enquanto o servidor da Vercel estiver ativo, e o prazo de 15 minutos vale sempre.
+
+## Pagamento pelo Mercado Pago (Checkout Pro)
+Na finalização do pedido, o cliente escolhe Pix, cartão ou boleto e é levado ao ambiente seguro do Mercado Pago para pagar. O site **não** recebe nem guarda dados de cartão.
+
+Variáveis de ambiente na Vercel:
+- `MP_ACCESS_TOKEN` (obrigatória): Access Token do Mercado Pago. Painel de desenvolvedores, Suas integrações, criar aplicação (Checkout Pro), Credenciais. Use primeiro o **de teste** (começa com `TEST-`) e, quando tudo funcionar, troque pelo **de produção** (começa com `APP_USR-`).
+- `MAX_INSTALLMENTS` (opcional): máximo de parcelas no cartão. Padrão 6.
+- `DESCONTO_MAX_PCT` (opcional): maior desconto aceito sobre o total (Pix, cupom). Padrão 20.
+- `VALIDAR_CATALOGO` (opcional): `0` desliga a conferência de preços pelo `api/_catalogo.js`.
+
+Como funciona:
+- Os preços de cada produto são conferidos no servidor com `api/_catalogo.js`. **Se você mudar preços ou produtos no site, atualize esse arquivo**, senão o pagamento recusa o produto.
+- Pix só mostra Pix, boleto só mostra boleto, e cartão mostra crédito e débito com até `MAX_INSTALLMENTS` parcelas.
+- Ao voltar do pagamento, o cliente vê uma mensagem de aprovado, pendente ou não concluído.
+- A situação real do pagamento fica no painel do Mercado Pago. Como a Vercel não guarda dados, o site não atualiza sozinho o painel de pedidos da loja.
+- Para testar: crie usuários de teste no Mercado Pago e use os cartões de teste da documentação deles. Só ative o token de produção depois.
+
+Observação: a pasta `mercado-pago-backend`, que veio antes, era para hospedar um servidor próprio. **Não é necessária** com este projeto na Vercel.
